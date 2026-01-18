@@ -1,0 +1,94 @@
+{% extends "base.html" %}
+{% block content %}
+
+<style>
+.report-box {
+    max-width: 700px;
+    margin: 20px auto;
+    background: #fff;
+    padding: 25px;
+    border-radius: 12px;
+    box-shadow: 0 6px 15px rgba(0,0,0,0.1);
+}
+
+h1 {
+    text-align: center;
+    margin-bottom: 25px;
+    font-size: 24px;
+}
+
+/* Table container for horizontal scroll on small devices */
+.table-wrapper {
+    overflow-x: auto;
+}
+
+/* Table styling */
+table {
+    width: 100%;
+    border-collapse: collapse;
+    min-width: 350px;
+}
+
+th, td {
+    padding: 12px;
+    border-bottom: 1px solid #ddd;
+    text-align: center;
+}
+
+th {
+    background: #f0f0f0;
+    font-weight: bold;
+    color: #333;
+}
+
+td {
+    background: #fff9c4; /* light yellow background for readability */
+    transition: background 0.2s;
+}
+
+/* Hover effect on rows */
+tr:hover td {
+    background: #fff59d; /* brighter yellow on hover */
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+    .report-box { padding: 20px; }
+    th, td { padding: 10px; font-size: 14px; }
+    h1 { font-size: 22px; }
+}
+
+@media (max-width: 480px) {
+    .report-box { padding: 15px; margin: 10px; }
+    th, td { padding: 8px; font-size: 13px; }
+    h1 { font-size: 20px; }
+}
+</style>
+
+<div class="report-box">
+    <h1>📅 Monthly Sales Report</h1>
+
+    {% if report|length == 0 %}
+        <p style="text-align:center; font-style:italic; font-size:16px;">No sales data available.</p>
+    {% else %}
+        <div class="table-wrapper">
+            <table>
+                <tr>
+                    <th>Month</th>
+                    <th>Total Orders</th>
+                    <th>Total Revenue (₹)</th>
+                </tr>
+
+                {% for month, data in report.items() %}
+                <tr>
+                    <td>{{ month }}</td>
+                    <td>{{ data.orders }}</td>
+                    <td>₹{{ data.revenue }}</td>
+                </tr>
+                {% endfor %}
+            </table>
+        </div>
+    {% endif %}
+</div>
+
+{% endblock %}

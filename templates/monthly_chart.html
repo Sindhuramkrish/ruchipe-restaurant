@@ -1,0 +1,125 @@
+{% extends "base.html" %}
+{% block content %}
+
+<h2 style="margin-bottom: 15px; text-align:center;">🥧 Monthly Sales Pie Chart</h2>
+
+<div class="chart-container">
+
+    <!-- Month selection form -->
+    <form method="POST" class="month-form">
+        <label for="month">Select Month:</label>
+        <select name="month" id="month" required>
+            <option value="">-- Select Month --</option>
+            {% for m in months %}
+                <option value="{{ m }}" {% if selected_month == m %}selected{% endif %}>{{ m }}</option>
+            {% endfor %}
+        </select>
+        <button type="submit">View</button>
+    </form>
+
+    {% if labels %}
+    <div class="canvas-wrapper">
+        <canvas id="pieChart"></canvas>
+    </div>
+    {% endif %}
+
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+{% if labels %}
+<script>
+const ctx = document.getElementById('pieChart').getContext('2d');
+
+// Generate dynamic colors
+function generateColors(n) {
+    const baseColors = [
+        '#FF6384', '#36A2EB', '#FFCE56', '#4BC0C0', '#9966FF',
+        '#FF9F40', '#C9CBCF', '#8DFF56', '#FF56B2', '#56FFAA'
+    ];
+    return Array.from({length: n}, (_, i) => baseColors[i % baseColors.length]);
+}
+
+new Chart(ctx, {
+    type: 'pie',
+    data: {
+        labels: {{ labels | tojson | safe }},
+        datasets: [{
+            data: {{ values | tojson | safe }},
+            backgroundColor: generateColors({{ labels|length }}),
+            borderWidth: 1
+        }]
+    },
+    options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        plugins: {
+            legend: {
+                position: 'bottom',
+                labels: { boxWidth: 15, padding: 10 }
+            }
+        }
+    }
+});
+</script>
+{% endif %}
+
+<style>
+.chart-container {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 20px;
+    padding: 20px;
+    width: 100%;
+    max-width: 100%;
+}
+
+/* Form alignment */
+.month-form {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    flex-wrap: wrap;
+    justify-content: center;
+}
+
+.month-form label {
+    margin: 0;
+    font-weight: bold;
+}
+
+.month-form select,
+.month-form button {
+    padding: 8px 12px;
+    font-size: 14px;
+    border-radius: 6px;
+    border: 1px solid #ccc;
+    cursor: pointer;
+}
+
+.month-form button {
+    background-color: #2e7d32;
+    color: white;
+    border: none;
+    transition: background 0.3s;
+}
+
+.month-form button:hover {
+    background-color: #1b5e20;
+}
+
+/* Chart wrapper */
+.canvas-wrapper {
+    width: 100%;
+    max-width: 300px;
+    height: 300px;
+}
+
+canvas {
+    width: 100% !important;
+    height: 100% !important;
+}
+</style>
+
+{% endblock %}

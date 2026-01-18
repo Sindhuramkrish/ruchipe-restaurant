@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Order Cancelled</title>
+   <style>
+body {
+    font-family: Arial;
+    background: #f5f5f5;
+    text-align: center;
+    padding-top: 80px;
+}
+
+.box {
+    background: white;
+    width: 350px;
+    max-width: 90%; /* responsive width */
+    margin: auto;
+    padding: 30px;
+    border-radius: 12px;
+}
+
+.msg {
+    font-size: 22px;
+    color: #d32f2f;
+    margin-bottom: 10px;
+}
+
+a {
+    display: inline-block;
+    margin-top: 20px;
+    padding: 10px 16px;
+    background: black;
+    color: white;
+    text-decoration: none;
+    border-radius: 8px;
+}
+
+@media (max-width: 768px) {
+    .box { padding: 20px; }
+    .msg { font-size: 20px; }
+    a { font-size: 14px; padding: 8px 12px; }
+}
+</style>
+
+</head>
+
+<body>
+
+<div class="box">
+    <div class="msg">❌ Order Cancelled</div>
+    <p>The current order has been cleared.</p>
+
+    <a href="{{ url_for('menu_page') }}">Start New Order</a>
+</div>
+
+</body>
+</html>

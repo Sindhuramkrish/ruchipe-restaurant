@@ -1,0 +1,89 @@
+<style>
+.cart-box {
+    max-width: 700px;
+    margin: auto;
+    background: #fff;
+    padding: 20px;
+    border-radius: 12px;
+}
+
+/* Make table responsive */
+.table-wrapper {
+    overflow-x: auto; /* allows horizontal scroll on small screens */
+}
+
+table {
+    width: 100%;
+    border-collapse: collapse;
+    min-width: 400px; /* prevents columns from shrinking too much */
+}
+
+th, td {
+    padding: 10px;
+    text-align: center;
+    border-bottom: 1px solid #ddd;
+}
+
+.total {
+    text-align: right;
+    font-size: 20px;
+    font-weight: bold;
+    margin-top: 15px;
+}
+
+/* Buttons */
+.print-btn, .checkout-btn, .cancel-btn {
+    display: block;
+    margin-top: 10px;
+    padding: 12px;
+    text-align: center;
+    text-decoration: none;
+    border-radius: 8px;
+    font-size: 16px;
+}
+
+.print-btn { background: #000; color: white; }
+.checkout-btn { background: #2e7d32; color: white; }
+.cancel-btn { background: #c62828; color: white; }
+
+/* Mobile adjustments */
+@media (max-width: 768px) {
+    .cart-box { padding: 15px; }
+    table { font-size: 14px; }
+    .total { font-size: 18px; }
+}
+</style>
+
+<div class="cart-box">
+    <h1>🛒 Your Cart</h1>
+
+    {% if cart|length == 0 %}
+        <p>Your cart is empty 😔</p>
+        <a href="{{ url_for('menu_page') }}">Go to Menu</a>
+    {% else %}
+        <div class="table-wrapper">
+            <table>
+                <tr>
+                    <th>Item</th>
+                    <th>Qty</th>
+                    <th>Price</th>
+                    <th>Subtotal</th>
+                </tr>
+                {% for item in cart %}
+                <tr>
+                    <td>{{ item.name }}</td>
+                    <td>{{ item.qty }}</td>
+                    <td>₹{{ item.price }}</td>
+                    <td>₹{{ item.subtotal }}</td>
+                </tr>
+                {% endfor %}
+            </table>
+        </div>
+
+        <div class="total">Total: ₹{{ total }}</div>
+
+        <a href="{{ url_for('bill') }}" class="print-btn">🧾 PRINT BILL</a>
+        <a href="{{ url_for('checkout') }}" class="checkout-btn">✅ CHECKOUT</a>
+        <a href="{{ url_for('cancel_order') }}" class="cancel-btn">❌ CANCEL ORDER</a>
+    {% endif %}
+</div>

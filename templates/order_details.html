@@ -1,0 +1,108 @@
+{% extends "base.html" %}
+{% block content %}
+
+<style>
+.details-box {
+    max-width: 600px;
+    margin: auto;
+    background: white;
+    padding: 20px;
+    border-radius: 12px;
+}
+
+.details-box h2 {
+    text-align: center;
+    margin-bottom: 15px;
+}
+
+/* Table styling */
+table {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+th, td {
+    padding: 12px 10px;
+    border-bottom: 1px solid #ddd;
+    text-align: center;
+}
+
+th {
+    background: #f5f5b0; /* bright header */
+    font-weight: bold;
+}
+
+td {
+    background: #fff9c4; /* bright yellowish row background */
+}
+
+/* Total styling */
+.total {
+    text-align: right;
+    font-size: 18px;
+    font-weight: bold;
+    margin-top: 15px;
+}
+
+/* Responsive for small screens */
+@media (max-width: 768px) {
+    table, thead, tbody, th, td, tr {
+        display: block;
+        width: 100%;
+    }
+
+    tr {
+        margin-bottom: 15px;
+        border-bottom: 2px solid #eee;
+    }
+
+    th {
+        display: none; /* hide header on mobile */
+    }
+
+    td {
+        text-align: right;
+        padding-left: 50%;
+        position: relative;
+        margin-bottom: 6px;
+    }
+
+    td::before {
+        content: attr(data-label);
+        position: absolute;
+        left: 15px;
+        width: calc(50% - 30px);
+        font-weight: bold;
+        text-align: left;
+    }
+}
+</style>
+
+<div class="details-box">
+    <h2>🧾 Order #{{ order.id }}</h2>
+    <p style="text-align:center;">
+        Date: {{ utc_to_ist(order.date).strftime('%d-%m-%Y %I:%M %p') }}
+    </p>
+
+    <table>
+        <tr>
+            <th>Item</th>
+            <th>Qty</th>
+            <th>Price</th>
+        </tr>
+
+        {% for item in items %}
+        <tr>
+            <td data-label="Item">{{ item.item_name }}</td>
+            <td data-label="Qty">{{ item.qty }}</td>
+            <td data-label="Price">₹{{ item.price * item.qty }}</td>
+        </tr>
+        {% endfor %}
+    </table>
+
+    <div class="total">
+        Total: ₹{{ order.total }}
+    </div>
+</div>
+
+{% endblock %}

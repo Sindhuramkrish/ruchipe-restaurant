@@ -1,0 +1,6 @@
+__pycache__/
+instance/
+*.db
+*.db-journal
+.env
+.idea/

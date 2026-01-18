@@ -1,0 +1,111 @@
+{% extends "base.html" %}
+{% block content %}
+
+<style>
+.orders-box {
+    max-width: 800px;
+    margin: auto;
+    background: white;
+    padding: 20px;
+    border-radius: 12px;
+}
+
+.orders-box h1 {
+    text-align: center;
+    margin-bottom: 20px;
+}
+
+/* Table styling */
+table {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+th, td {
+    padding: 12px 10px;
+    border-bottom: 1px solid #ddd;
+    text-align: center;
+}
+
+th {
+    background: #f5f5b0; /* bright header */
+    font-weight: bold;
+}
+
+/* Links inside table */
+td a {
+    color: #2e7d32;
+    text-decoration: none;
+    font-weight: bold;
+}
+
+td a:hover {
+    text-decoration: underline;
+}
+
+/* Responsive for smaller screens */
+@media (max-width: 768px) {
+    table, thead, tbody, th, td, tr {
+        display: block;
+        width: 100%;
+    }
+
+    tr {
+        margin-bottom: 15px;
+        border-bottom: 2px solid #eee;
+    }
+
+    th {
+        display: none; /* hide headers on mobile */
+    }
+
+    td {
+        text-align: right;
+        padding-left: 50%;
+        position: relative;
+    }
+
+    td::before {
+        content: attr(data-label);
+        position: absolute;
+        left: 15px;
+        width: calc(50% - 30px);
+        font-weight: bold;
+        text-align: left;
+    }
+}
+</style>
+
+<div class="orders-box">
+    <h1>📊 Order History</h1>
+
+    {% if orders|length == 0 %}
+        <p style="text-align:center;">No orders yet.</p>
+    {% else %}
+        <table>
+            <tr>
+                <th>Order ID</th>
+                <th>Date</th>
+                <th>Total (₹)</th>
+            </tr>
+
+            {% for order in orders %}
+            <tr>
+                <td data-label="Order ID">
+                    <a href="{{ url_for('order_details', order_id=order.id) }}">
+                        #{{ order.id }}
+                    </a>
+                </td>
+                <td data-label="Date">
+                    {{ utc_to_ist(order.date).strftime('%d-%m-%Y %I:%M %p') }}
+                </td>
+                <td data-label="Total">
+                    ₹{{ order.total }}
+                </td>
+            </tr>
+            {% endfor %}
+        </table>
+    {% endif %}
+</div>
+
+{% endblock %}

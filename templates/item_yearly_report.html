@@ -1,0 +1,100 @@
+{% extends "base.html" %}
+{% block content %}
+
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+<style>
+.report-box {
+    max-width: 900px;
+    width: 95%;
+    margin: 30px auto;
+    background: white;
+    padding: 20px;
+    border-radius: 12px;
+    box-shadow: 0 6px 15px rgba(0,0,0,0.1);
+}
+
+.report-box h1 {
+    text-align: center;
+    margin-bottom: 25px;
+    font-size: 28px;
+}
+
+.report-box h3 {
+    margin-top: 30px;
+    font-size: 20px;
+    text-align: center;
+}
+
+.chart-wrapper {
+    overflow-x: auto;
+    padding-bottom: 15px;
+}
+
+.chart-container {
+    min-width: 400px; /* ensures bars don't shrink too much */
+    height: 300px;
+}
+
+/* Mobile adjustments */
+@media (max-width: 768px) {
+    .report-box { padding: 15px; }
+    .report-box h1 { font-size: 22px; }
+    .report-box h3 { font-size: 18px; }
+    .chart-container { height: 250px; min-width: 300px; }
+}
+
+@media (max-width: 480px) {
+    .chart-container { height: 220px; min-width: 250px; }
+}
+</style>
+
+<div class="report-box">
+    <h1>📊 Item-wise Yearly Sales</h1>
+
+    {% for year, items in report.items() %}
+        <h3>Year {{ year }}</h3>
+        <div class="chart-wrapper">
+            <div class="chart-container">
+                <canvas id="chart{{ year }}"></canvas>
+            </div>
+        </div>
+
+        <!-- Safe JS block with dynamic bar width -->
+        <script type="text/javascript">
+            (function() {
+                var labels = {{ items.keys()|list|tojson|safe }};
+                var data = {{ items.values()|list|tojson|safe }};
+                var ctx = document.getElementById("chart{{ year }}").getContext("2d");
+
+                // Dynamically calculate barThickness
+                var barThickness = labels.length > 10 ? 20 : undefined; // narrower if >10 items
+
+                new Chart(ctx, {
+                    type: 'bar',
+                    data: {
+                        labels: labels,
+                        datasets: [{
+                            label: 'Revenue (₹)',
+                            data: data,
+                            backgroundColor: '#ff9800',
+                            barThickness: barThickness
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        plugins: { legend: { display: false } },
+                        scales: {
+                            x: { ticks: { autoSkip: false }, grid: { display: false } },
+                            y: { beginAtZero: true }
+                        }
+                    }
+                });
+            })();
+        </script>
+
+    {% endfor %}
+</div>
+
+{% endblock %}

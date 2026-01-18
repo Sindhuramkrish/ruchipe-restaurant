@@ -1,0 +1,92 @@
+{% extends "base.html" %}
+
+{% block content %}
+
+<style>
+/* Container for the form */
+.form-box {
+    max-width: 400px;
+    width: 90%;
+    margin: 30px auto;
+    padding: 25px;
+    background: white;
+    border-radius: 12px;
+    box-shadow: 0 6px 15px rgba(0,0,0,0.1);
+    font-family: Arial, sans-serif;
+}
+
+/* Form labels and inputs */
+.form-box label {
+    display: block;
+    font-weight: bold;
+    margin-bottom: 6px;
+    margin-top: 12px;
+}
+
+.form-box input[type="text"],
+.form-box input[type="number"],
+.form-box input[type="file"] {
+    width: 100%;
+    padding: 10px 12px;
+    border-radius: 6px;
+    border: 1px solid #ccc;
+    box-sizing: border-box;
+    margin-bottom: 12px;
+    font-size: 14px;
+}
+
+/* Submit button */
+.form-box button {
+    width: 100%;
+    padding: 12px;
+    background-color: #2e7d32;
+    color: white;
+    font-weight: bold;
+    font-size: 16px;
+    border: none;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: background 0.2s;
+}
+
+.form-box button:hover {
+    background-color: #1b5e20;
+}
+
+/* Mobile adjustments */
+@media (max-width: 480px) {
+    .form-box {
+        padding: 20px;
+    }
+
+    .form-box button {
+        font-size: 15px;
+        padding: 10px;
+    }
+
+    .form-box input[type="text"],
+    .form-box input[type="number"],
+    .form-box input[type="file"] {
+        font-size: 14px;
+        padding: 8px 10px;
+    }
+}
+</style>
+
+<div class="form-box">
+    <h2 style="text-align:center; margin-bottom: 20px;">➕ Add Food Item</h2>
+    <form method="POST" enctype="multipart/form-data">
+        <label>Food Name</label>
+        <input type="text" name="name" placeholder="Enter food name" required>
+
+        <label>Price</label>
+        <input type="number" name="price" placeholder="Enter price" required>
+
+        <label>Food Image</label>
+        <input type="file" name="image" accept=".jpg,.jpeg,.png" required>
+
+        <button type="submit">Add Item</button>
+    </form>
+</div>
+
+{% endblock %}

@@ -1,0 +1,209 @@
+{% extends "base.html" %}
+{% block content %}
+
+<!-- Header with VIEW CART button -->
+<div class="menu-header">
+    <a href="{{ url_for('cart') }}" class="cart-btn">🛒 VIEW CART</a>
+</div>
+
+<!-- Menu Grid Container -->
+<div class="menu-grid">
+{% for item in menu %}
+    <div class="menu-card">
+        <img src="{{ item.image }}" alt="{{ item.name }}">
+        <h3>{{ item.name }}</h3>
+        <p class="price">₹{{ item.price }}</p>
+
+        <div class="cart-control">
+            <button class="add-btn" onclick="showQty(this, {{ item.id }})">ADD TO CART</button>
+            <div class="qty-box hidden">
+                <button class="qty-btn" onclick="changeQty(this, -1, {{ item.id }})">−</button>
+                <span class="qty">1</span>
+                <button class="qty-btn" onclick="changeQty(this, 1, {{ item.id }})">+</button>
+            </div>
+        </div>
+    </div>
+{% endfor %}
+</div>
+
+<!-- Scripts -->
+<script>
+function showQty(button, itemId) {
+    button.style.display = "none";
+    const qtyBox = button.nextElementSibling;
+    qtyBox.classList.remove("hidden");
+    fetch(`/update_cart/${itemId}/add`);
+}
+
+function changeQty(btn, change, itemId) {
+    const qtyBox = btn.parentElement;
+    const qtySpan = qtyBox.querySelector(".qty");
+    const addBtn = qtyBox.previousElementSibling;
+
+    let qty = parseInt(qtySpan.innerText);
+
+    if (change === 1) {
+        qty += 1;
+        fetch(`/update_cart/${itemId}/add`);
+    } else {
+        qty -= 1;
+        fetch(`/update_cart/${itemId}/remove`);
+    }
+
+    if (qty <= 0) {
+        qtyBox.classList.add("hidden");
+        addBtn.style.display = "inline-block";
+        qtySpan.innerText = 1;
+        return;
+    }
+
+    qtySpan.innerText = qty;
+}
+</script>
+
+<!-- Styles -->
+<style>
+/* Header */
+<style>
+/* PAGE BACKGROUND */
+body {
+    background: linear-gradient(135deg, #fff8e1, #fff3e0);
+}
+
+/* Header */
+.menu-header {
+    display: flex;
+    justify-content: flex-start;
+    padding: 20px;
+}
+
+.cart-btn {
+    padding: 10px 18px;
+    background: linear-gradient(135deg, #ff9800, #ff6f00);
+    color: white;
+    text-decoration: none;
+    font-weight: bold;
+    border-radius: 12px;
+    box-shadow: 0 6px 15px rgba(255,152,0,0.4);
+    transition: all 0.3s ease;
+}
+
+.cart-btn:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 10px 25px rgba(255,152,0,0.6);
+}
+
+/* Menu Grid */
+.menu-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+    gap: 25px;
+    padding: 20px;
+    max-width: 1400px;
+    margin: auto;
+}
+
+/* Menu Card */
+.menu-card {
+    background: #ffffff;
+    padding: 20px;
+    border-radius: 18px;
+    box-shadow: 0 8px 20px rgba(0,0,0,0.08);
+    text-align: center;
+    transition: all 0.3s ease;
+}
+
+.menu-card:hover {
+    transform: translateY(-6px);
+    box-shadow: 0 14px 30px rgba(0,0,0,0.15);
+}
+
+/* Image */
+.menu-card img {
+    width: 100%;
+    height: 160px;
+    object-fit: cover;
+    border-radius: 14px;
+    margin-bottom: 12px;
+    transition: transform 0.3s ease;
+}
+
+.menu-card:hover img {
+    transform: scale(1.06);
+}
+
+/* Text */
+.menu-card h3 {
+    font-size: 18px;
+    color: #333;
+    margin: 8px 0;
+}
+
+.menu-card p {
+    font-size: 16px;
+    font-weight: bold;
+    color: #2e7d32;
+}
+
+/* Buttons */
+.add-btn {
+    padding: 10px 18px;
+    font-size: 14px;
+    border: none;
+    border-radius: 10px;
+    cursor: pointer;
+    background: linear-gradient(135deg, #2e7d32, #1b5e20);
+    color: white;
+    font-weight: bold;
+    margin-bottom: 8px;
+    box-shadow: 0 5px 15px rgba(46,125,50,0.4);
+    transition: all 0.3s ease;
+}
+
+.add-btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 22px rgba(46,125,50,0.6);
+}
+
+/* Quantity buttons */
+.qty-btn {
+    width: 38px;
+    height: 38px;
+    background: linear-gradient(135deg, #2e7d32, #1b5e20);
+    color: white;
+    border: none;
+    border-radius: 50%;
+    font-size: 18px;
+    font-weight: bold;
+    margin: 0 6px;
+    cursor: pointer;
+    box-shadow: 0 4px 12px rgba(46,125,50,0.4);
+    transition: all 0.25s ease;
+}
+
+.qty-btn:hover {
+    transform: scale(1.15);
+    box-shadow: 0 6px 18px rgba(46,125,50,0.6);
+}
+
+.qty {
+    font-size: 16px;
+    min-width: 22px;
+    display: inline-block;
+    text-align: center;
+}
+
+/* Utility */
+.cart-control { margin-top: 12px; }
+.hidden { display: none; }
+
+/* Mobile */
+@media (max-width: 480px) {
+    .add-btn { font-size: 14px; padding: 8px 14px; }
+    .qty-btn { width: 32px; height: 32px; font-size: 16px; }
+    .cart-btn { font-size: 14px; padding: 8px 14px; }
+}
+</style>
+
+
+{% endblock %}
