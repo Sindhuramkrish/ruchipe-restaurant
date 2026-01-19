@@ -37,6 +37,9 @@ app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///restaurant.db'
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 
 db = SQLAlchemy(app)
+with app.app_context():
+    db.create_all()
+
 
 # -------------------- MODELS --------------------
 
@@ -62,8 +65,7 @@ class OrderItem(db.Model):
     price = db.Column(db.Integer)
     order = db.relationship('Order', backref='items')
 
-    with app.app_context():
-        db.create_all()
+
 
 
 # -------------------- HOME --------------------
@@ -392,9 +394,6 @@ def order_details(order_id):
 
 
 
-if __name__ == '__main__':
-    with app.app_context():
-        db.create_all()
-    app.run(host="0.0.0.0", port=int(os.environ.get("PORT", 5000)))
+
 
 
