@@ -1,186 +1,119 @@
-
 import os
+from datetime import datetime, timedelta
+from collections import defaultdict
+
+from flask import Flask, render_template, redirect, url_for, session, request, jsonify
+from flask_sqlalchemy import SQLAlchemy
 import cloudinary
 import cloudinary.uploader
 from dotenv import load_dotenv
 
-
-from werkzeug.utils import secure_filename
-from flask import request
-
-from flask import Flask, render_template, redirect, url_for, session
-from flask_sqlalchemy import SQLAlchemy
-from datetime import datetime, timedelta
-
-
-from dotenv import load_dotenv
+# -------------------- LOAD ENV --------------------
 load_dotenv()
-
 
 cloudinary.config(
     cloud_name=os.getenv("CLOUDINARY_CLOUD_NAME"),
     api_key=os.getenv("CLOUDINARY_API_KEY"),
     api_secret=os.getenv("CLOUDINARY_API_SECRET")
 )
-import cloudinary
-import cloudinary.uploader
 
-
-
+# -------------------- APP SETUP --------------------
 app = Flask(__name__)
-app.secret_key = os.getenv("SECRET_KEY", "fallback-secret")
+app.secret_key = "restaurant_secret"
 
-
-
-# -------------------- DATABASE CONFIG --------------------
-app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///restaurant.db'
-app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
-
+# -------------------- DATABASE --------------------
+app.config["SQLALCHEMY_DATABASE_URI"] = os.getenv("DATABASE_URL")
+app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False
 db = SQLAlchemy(app)
-with app.app_context():
-    db.create_all()
-
 
 # -------------------- MODELS --------------------
-
 class Menu(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     name = db.Column(db.String(100), nullable=False)
     price = db.Column(db.Integer, nullable=False)
     image = db.Column(db.String(200), nullable=False)
 
-
 class Order(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     total = db.Column(db.Integer, nullable=False)
     date = db.Column(db.DateTime, default=datetime.utcnow)
 
-
-
 class OrderItem(db.Model):
     id = db.Column(db.Integer, primary_key=True)
-    order_id = db.Column(db.Integer, db.ForeignKey('order.id'))
+    order_id = db.Column(db.Integer, db.ForeignKey("order.id"))
     item_name = db.Column(db.String(100))
     qty = db.Column(db.Integer)
     price = db.Column(db.Integer)
-    order = db.relationship('Order', backref='items')
+    order = db.relationship("Order", backref="items")
 
-
-
-
-# -------------------- HOME --------------------
+# -------------------- HELPERS --------------------
 def utc_to_ist(utc_time):
     return utc_time + timedelta(hours=5, minutes=30)
 
-
-
-
-@app.route('/')
+# -------------------- ROUTES --------------------
+@app.route("/")
 def home():
     return render_template("home.html")
 
-# -------------------- MENU --------------------
-
-@app.route('/menu')
+@app.route("/menu")
 def menu_page():
     items = Menu.query.all()
     return render_template("menu.html", menu=items)
 
-# -------------------- ADD TO CART --------------------
-@app.route('/add-food', methods=['GET', 'POST'])
+@app.route("/add-food", methods=["GET", "POST"])
 def add_food():
-    if request.method == 'POST':
-        name = request.form.get('name', '').strip()
-        price = request.form.get('price', '').strip()
-        file = request.files.get('image')
+    if request.method == "POST":
+        name = request.form.get("name", "").strip()
+        price = request.form.get("price", "").strip()
+        file = request.files.get("image")
 
-        # -------- VALIDATION --------
         if not name or not price or not file:
-            return render_template(
-                "add_food.html",
-                error="All fields are required"
-            )
+            return render_template("add_food.html", error="All fields required")
 
         if not price.isdigit():
-            return render_template(
-                "add_food.html",
-                error="Price must be a number"
-            )
+            return render_template("add_food.html", error="Price must be number")
 
-        # -------- DUPLICATE CHECK --------
-        existing = Menu.query.filter_by(name=name).first()
-        if existing:
-            return render_template(
-                "add_food.html",
-                error="Item already exists"
-            )
+        if Menu.query.filter_by(name=name).first():
+            return render_template("add_food.html", error="Item already exists")
 
-        try:
-            # 🔥 Upload image to Cloudinary
-            upload_result = cloudinary.uploader.upload(
-                file,
-                folder="restaurant_menu"
-            )
+        upload = cloudinary.uploader.upload(file, folder="restaurant_menu")
 
-            image_url = upload_result["secure_url"]
-
-        except Exception as e:
-            return render_template(
-                "add_food.html",
-                error="Image upload failed"
-            )
-
-        # -------- SAVE DB --------
         new_item = Menu(
             name=name,
             price=int(price),
-            image=image_url   # ✅ Cloudinary URL
+            image=upload["secure_url"]
         )
-
         db.session.add(new_item)
         db.session.commit()
-
-        return redirect(url_for('menu_page'))
+        return redirect(url_for("menu_page"))
 
     return render_template("add_food.html")
 
-@app.route('/add/<int:item_id>')
+@app.route("/add/<int:item_id>")
 def add_to_cart(item_id):
-    cart = session.get('cart', {})
+    cart = session.get("cart", {})
     cart[str(item_id)] = cart.get(str(item_id), 0) + 1
-    session['cart'] = cart
-    return redirect(url_for('menu_page'))
-#update cart item
-from flask import session, jsonify
+    session["cart"] = cart
+    return redirect(url_for("menu_page"))
 
-@app.route('/update_cart/<int:item_id>/<action>')
+@app.route("/update_cart/<int:item_id>/<action>")
 def update_cart(item_id, action):
-    cart = session.get('cart', {})
+    cart = session.get("cart", {})
+    key = str(item_id)
 
-    item_id_str = str(item_id)  # session keys must be string
+    if action == "add":
+        cart[key] = cart.get(key, 0) + 1
+    elif action == "remove" and key in cart:
+        cart[key] -= 1
+        if cart[key] <= 0:
+            del cart[key]
 
-    if action == 'add':
-        cart[item_id_str] = cart.get(item_id_str, 0) + 1
+    session["cart"] = cart
+    return jsonify(qty=cart.get(key, 0))
 
-    elif action == 'remove':
-        if item_id_str in cart:
-            cart[item_id_str] -= 1
-            if cart[item_id_str] <= 0:
-                del cart[item_id_str]
-
-    session['cart'] = cart
-    session.modified = True
-
-    # Return JSON with just the updated quantity of this item
-    return jsonify({"qty": cart.get(item_id_str, 0)})
-
-
-
-# -------------------- CART --------------------
-
-@app.route('/cart')
+@app.route("/cart")
 def cart():
-    cart_data = session.get('cart', {})
+    cart_data = session.get("cart", {})
     cart_items = []
     total = 0
 
@@ -188,17 +121,14 @@ def cart():
         item = db.session.get(Menu, int(item_id))
         subtotal = item.price * qty
         total += subtotal
-
         cart_items.append({
-            'name': item.name,
-            'price': item.price,
-            'qty': qty,
-            'subtotal': subtotal
+            "name": item.name,
+            "price": item.price,
+            "qty": qty,
+            "subtotal": subtotal
         })
 
     return render_template("cart.html", cart=cart_items, total=total)
-
-# -------------------- BILL (PRINT ONLY) --------------------
 
 @app.route('/bill')
 def bill():
@@ -219,50 +149,40 @@ def bill():
 
     return render_template("bill.html", items=cart_items, total=total)
 
-# -------------------- CHECKOUT --------------------
 
-@app.route('/checkout')
+@app.route("/checkout")
 def checkout():
-    cart_data = session.get('cart', {})
-
+    cart_data = session.get("cart", {})
     if not cart_data:
-        return redirect(url_for('cart'))
+        return redirect(url_for("cart"))
 
-    total = 0
     order = Order(total=0)
     db.session.add(order)
-    db.session.commit()   # generate order.id
+    db.session.commit()
 
+    total = 0
     for item_id, qty in cart_data.items():
         item = db.session.get(Menu, int(item_id))
-        subtotal = item.price * qty
-        total += subtotal
-
-        order_item = OrderItem(
+        total += item.price * qty
+        db.session.add(OrderItem(
             order_id=order.id,
             item_name=item.name,
             qty=qty,
             price=item.price
-        )
-        db.session.add(order_item)
+        ))
 
     order.total = total
     db.session.commit()
-
-    # 🔥 Clear cart ONLY from frontend
-    session.pop('cart', None)
-
+    session.pop("cart", None)
     return render_template("checkout.html", order_id=order.id, total=total)
 
 
-#cancel order
 @app.route('/cancel')
 def cancel_order():
     session.pop('cart', None)   # clear frontend cart only
     return render_template("cancel.html")
 
-# -------------------- START APP --------------------
-#order history route
+
 @app.route('/orders')
 def order_history():
     orders = Order.query.order_by(Order.date.desc()).all()
@@ -316,11 +236,6 @@ def item_yearly_report():
         report=report
     )
 
-
-from collections import defaultdict
-from flask import request
-
-from collections import defaultdict
 
 @app.route('/monthly-report')
 def monthly_report():
@@ -377,9 +292,6 @@ def monthly_chart():
         labels=labels,
         values=values
     )
-
-
-
 @app.route('/order/<int:order_id>')
 def order_details(order_id):
     order = Order.query.get_or_404(order_id)
@@ -393,7 +305,13 @@ def order_details(order_id):
     )
 
 
+# -------------------- START --------------------
 
+# -------------------- START --------------------
+# Ensure tables exist on startup (even in Render)
+with app.app_context():
+    db.create_all()
 
-
-
+# Only run this if running locally (not in Render / Gunicorn)
+if __name__ == "__main__":
+    app.run(debug=True)

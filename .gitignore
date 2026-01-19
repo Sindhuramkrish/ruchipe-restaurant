@@ -1,6 +1,22 @@
+# Python cache
 __pycache__/
+*.pyc
+
+# Virtual environment
+.venv/
+
+# Flask instance data
 instance/
+
+# Environment variables
+.env
+
+# IDE
+.idea/
+
+# Database files
 *.db
 *.db-journal
-.env
-.idea/
+
+# Generated / external static files
+static/
