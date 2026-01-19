@@ -62,6 +62,9 @@ class OrderItem(db.Model):
     price = db.Column(db.Integer)
     order = db.relationship('Order', backref='items')
 
+    with app.app_context():
+        db.create_all()
+
 
 # -------------------- HOME --------------------
 def utc_to_ist(utc_time):
