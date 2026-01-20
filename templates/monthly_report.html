@@ -6,33 +6,30 @@
     max-width: 700px;
     margin: 20px auto;
     background: #fff;
-    padding: 25px;
+    padding: 22px;
     border-radius: 12px;
     box-shadow: 0 6px 15px rgba(0,0,0,0.1);
 }
 
 h1 {
     text-align: center;
-    margin-bottom: 25px;
+    margin-bottom: 22px;
     font-size: 24px;
-}
-
-/* Table container for horizontal scroll on small devices */
-.table-wrapper {
-    overflow-x: auto;
 }
 
 /* Table styling */
 table {
     width: 100%;
     border-collapse: collapse;
-    min-width: 350px;
+    table-layout: fixed; /* IMPORTANT: helps fit table */
 }
 
 th, td {
-    padding: 12px;
+    padding: 8px 6px;
     border-bottom: 1px solid #ddd;
     text-align: center;
+    font-size: 14px;
+    word-break: break-word;
 }
 
 th {
@@ -42,26 +39,39 @@ th {
 }
 
 td {
-    background: #fff9c4; /* light yellow background for readability */
-    transition: background 0.2s;
+    background: #fff9c4;
 }
 
-/* Hover effect on rows */
+/* Hover */
 tr:hover td {
-    background: #fff59d; /* brighter yellow on hover */
+    background: #fff59d;
 }
 
-/* Responsive adjustments */
+/* Mobile fine-tuning (NO swipe, NO layout break) */
 @media (max-width: 768px) {
-    .report-box { padding: 20px; }
-    th, td { padding: 10px; font-size: 14px; }
-    h1 { font-size: 22px; }
+    th, td {
+        font-size: 13px;
+        padding: 6px 4px;
+    }
+
+    td:first-child {
+        font-size: 12px; /* month text */
+    }
+
+    h1 {
+        font-size: 22px;
+    }
 }
 
 @media (max-width: 480px) {
-    .report-box { padding: 15px; margin: 10px; }
-    th, td { padding: 8px; font-size: 13px; }
-    h1 { font-size: 20px; }
+    th, td {
+        font-size: 12px;
+        padding: 5px 3px;
+    }
+
+    h1 {
+        font-size: 20px;
+    }
 }
 </style>
 
@@ -69,25 +79,23 @@ tr:hover td {
     <h1>📅 Monthly Sales Report</h1>
 
     {% if report|length == 0 %}
-        <p style="text-align:center; font-style:italic; font-size:16px;">No sales data available.</p>
+        <p style="text-align:center; font-style:italic;">No sales data available.</p>
     {% else %}
-        <div class="table-wrapper">
-            <table>
-                <tr>
-                    <th>Month</th>
-                    <th>Total Orders</th>
-                    <th>Total Revenue (₹)</th>
-                </tr>
+        <table>
+            <tr>
+                <th>Month</th>
+                <th>Orders</th>
+                <th>Revenue (₹)</th>
+            </tr>
 
-                {% for month, data in report.items() %}
-                <tr>
-                    <td>{{ month }}</td>
-                    <td>{{ data.orders }}</td>
-                    <td>₹{{ data.revenue }}</td>
-                </tr>
-                {% endfor %}
-            </table>
-        </div>
+            {% for month, data in report.items() %}
+            <tr>
+                <td>{{ month }}</td>
+                <td>{{ data.orders }}</td>
+                <td>₹{{ data.revenue }}</td>
+            </tr>
+            {% endfor %}
+        </table>
     {% endif %}
 </div>
 
