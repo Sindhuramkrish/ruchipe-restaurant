@@ -102,26 +102,19 @@
     .order-btn { font-size: 14px; padding: 8px 20px; }
 }
 
-/* ---------------- Sticky ORDER NOW button on mobile ---------------- */
+/* ---------------- ORDER NOW button on mobile ---------------- */
 @media (max-width: 768px) {
     .order-btn {
-        position: fixed !important; /* stick to bottom */
+        position: absolute !important;
         bottom: 15px;
         left: 50%;
         transform: translateX(-50%);
-        width: calc(100% - 40px); /* padding from sides */
-        text-align: center;
-        z-index: 1200; /* above sidebar */
-        font-size: 16px;
-        padding: 12px 25px;
-        box-shadow: 0 4px 8px rgba(0,0,0,0.25);
-    }
-
-    /* Prevent content from being hidden behind button */
-    .content, .hero-container {
-        padding-bottom: 70px; /* enough space for button */
+        width: auto;
+        font-size: 15px;
+        padding: 10px 22px;
     }
 }
+
 </style>
 
 {% endblock %}
