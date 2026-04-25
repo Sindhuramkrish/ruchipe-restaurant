@@ -22,7 +22,25 @@ app = Flask(__name__)
 app.secret_key = "restaurant_secret"
 
 # -------------------- DATABASE --------------------
-app.config["SQLALCHEMY_DATABASE_URI"] = os.getenv("DATABASE_URL")
+# -------------------- DATABASE --------------------
+database_url = os.getenv("DATABASE_URL")
+
+if database_url and database_url.strip() != "":
+
+    # old postgres fix
+    if database_url.startswith("postgres://"):
+        database_url = database_url.replace(
+            "postgres://",
+            "postgresql://",
+            1
+        )
+
+    app.config["SQLALCHEMY_DATABASE_URI"] = database_url
+
+else:
+    # local fallback
+    app.config["SQLALCHEMY_DATABASE_URI"] = "sqlite:///restaurant.db"
+
 app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False
 db = SQLAlchemy(app)
 
